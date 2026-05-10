@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/static-components */
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { AdminPanel } from '../panels/AdminPanel'
@@ -16,9 +17,9 @@ import {
   Settings, 
   LogOut,
   Menu,
-  X,
-  GraduationCap
+  X
 } from 'lucide-react'
+import { CollegeLogo } from '@/components/modern/CollegeLogo'
 
 type Panel = {
   id: string
@@ -76,6 +77,7 @@ export default function DashboardScreen() {
   )
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedIndex((i) => Math.min(i, Math.max(0, panels.length - 1)))
   }, [panels.length])
 
@@ -87,9 +89,9 @@ export default function DashboardScreen() {
   const Sidebar = ({ className = '' }: { className?: string }) => (
     <aside className={`flex flex-col h-full ${className}`}>
       <div className="p-6 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-primary/20">
-            <GraduationCap className="w-6 h-6 text-primary" />
+        <div className="flex flex-col gap-3">
+          <div className="w-fit rounded-xl bg-white px-3 py-2 shadow-sm">
+            <CollegeLogo imageClassName="w-40" />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-white">Placement Desk</h2>
@@ -148,10 +150,10 @@ export default function DashboardScreen() {
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-white/5 backdrop-blur-xl border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/20">
-            <GraduationCap className="w-5 h-5 text-primary" />
+          <div className="rounded-lg bg-white px-2 py-1 shadow-sm">
+            <CollegeLogo imageClassName="w-28" />
           </div>
-          <span className="font-semibold text-white">RVCE Placement</span>
+          <span className="font-semibold text-white">Placement</span>
         </div>
         <Button
           variant="ghost"

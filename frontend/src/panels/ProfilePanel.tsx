@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-import type { AppUser } from '../api/types'
 import { useProfileStore } from '../store/useProfileStore'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -8,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CheckCircle2, AlertCircle, Upload, Save, FileText, Clock, Unlock } from 'lucide-react'
+import { StudentProfileSkeleton } from '@/components/modern/Skeleton'
 
 const FormField = ({ label, value, onChange, id, type = 'text', disabled = false }: {
   label: string
@@ -89,8 +89,8 @@ export function ProfilePanel() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+      <div className="mx-auto w-full max-w-md">
+        <StudentProfileSkeleton />
       </div>
     )
   }

@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Building2, Calendar, IndianRupee, Star, Mail, CheckCircle2, AlertCircle } from 'lucide-react'
 import { formatDate } from '../lib/format'
+import { CompanyListSkeleton } from '@/components/modern/Skeleton'
 
 export function CompaniesPanel() {
   const { 
@@ -37,8 +38,8 @@ export function CompaniesPanel() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+      <div className="mx-auto w-full max-w-md">
+        <CompanyListSkeleton />
       </div>
     )
   }

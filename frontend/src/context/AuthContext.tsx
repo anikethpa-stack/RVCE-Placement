@@ -2,6 +2,7 @@
  * @deprecated Migrated to Zustand in src/store/useAuthStore.ts
  * This file is kept for backward compatibility during the transition.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export { useAuth } from '../store/useAuthStore'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {

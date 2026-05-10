@@ -42,15 +42,11 @@ export const useFormStore = create<FormState>((set, get) => ({
   },
 
   submitResponse: async (formId, answers) => {
-    try {
-      const repo = useAuthStore.getState().repo
-      await repo.submitFormResponses(formId, answers)
-      
-      // Refresh the forms list to update the 'responseCount' badge
-      const forms = await repo.getAssignedForms()
-      set({ forms })
-    } catch (e) {
-      throw e
-    }
+    const repo = useAuthStore.getState().repo
+    await repo.submitFormResponses(formId, answers)
+
+    // Refresh the forms list to update the 'responseCount' badge
+    const forms = await repo.getAssignedForms()
+    set({ forms })
   },
 }))

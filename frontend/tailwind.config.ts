@@ -6,12 +6,21 @@ export default {
     content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   theme: {
   	extend: {
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        inter: ['Inter', 'sans-serif'],
+      },
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
+        'bg-dark': '#0f172a',
+        'bg-card': 'rgba(30, 41, 59, 0.7)',
+        'text-main': '#f8fafc',
+        'text-muted': '#94a3b8',
+        'glass-border': 'rgba(255, 255, 255, 0.1)',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
