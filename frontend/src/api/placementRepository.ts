@@ -36,7 +36,6 @@ export class PlacementRepository {
     return parseSession(json)
   }
 
-
   async restoreSession(): Promise<Session> {
     const json = await this.client.getJson('/auth/me')
     return parseSession(json)

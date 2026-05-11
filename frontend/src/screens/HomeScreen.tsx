@@ -1,6 +1,5 @@
 import { GoogleLogin } from '@react-oauth/google'
-import { useEffect, useState } from 'react'
-import { useAuth } from '../context/AuthContext'
+import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,6 +7,9 @@ import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { School, Download, Bell } from 'lucide-react'
 import { usePWAInstall } from '../hooks/usePWAInstall'
+import { useAuth } from '../context/AuthContext'
+import { AuthCardSkeleton } from '@/components/modern/Skeleton'
+import { CollegeLogo } from '@/components/modern/CollegeLogo'
 
 export default function HomeScreen() {
   const { loginWithGoogle, loginWithSpc, errorMessage, clearError, status } = useAuth()
@@ -41,58 +43,27 @@ export default function HomeScreen() {
   }, [errorMessage, clearError])
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div
-        className="absolute rounded-full blur-3xl opacity-40"
-        style={{ width: 320, height: 320, top: -120, right: -80, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
-      />
-      <div
-        className="absolute rounded-full blur-3xl opacity-30"
-        style={{ width: 280, height: 280, bottom: -100, left: -60, background: 'linear-gradient(135deg, #ec4899, #f43f5e)' }}
-      />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f8fbff] px-5 py-10 text-slate-950">
+      <div className="pointer-events-none absolute inset-x-[-35%] top-[-8rem] h-[25rem] rounded-b-[55%] bg-[#dff0ff]" />
+      <div className="pointer-events-none absolute inset-x-[-25%] top-[-2rem] h-[20rem] rounded-b-[55%] bg-white" />
 
-      <div className="absolute top-4 right-4 z-50 flex flex-col sm:flex-row gap-2">
-        <Button 
-          onClick={() => notificationPerm === 'default' ? requestNotificationPermission() : setShowNotifDialog(true)} 
-          variant="secondary" 
-          size="sm" 
-          className="gap-2 shadow-lg"
-        >
-          <Bell className="w-4 h-4" />
-          <span className="hidden sm:inline">
-            {notificationPerm === 'default' ? 'Enable Notifications' : 'Manage Notifications'}
-          </span>
-          <span className="sm:hidden">
-            {notificationPerm === 'default' ? 'Notify' : 'Manage'}
-          </span>
-        </Button>
-        {isInstallable && (
-          <Button onClick={promptInstall} variant="secondary" size="sm" className="gap-2 shadow-lg">
-            <Download className="w-4 h-4" />
-            <span className="hidden sm:inline">Install App</span>
-            <span className="sm:hidden">Install</span>
-          </Button>
-        )}
-      </div>
-
-      <div className="relative z-10 w-full max-w-md px-4">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center gap-3 px-5 py-3 mb-6 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-            <School className="w-6 h-6 text-primary" />
-            <span className="text-sm font-medium text-white">RV College of Engineering</span>
-          </div>
-          <h1 className="text-4xl font-bold text-white tracking-tight">Placement Portal</h1>
-          <p className="mt-2 text-muted-foreground">Your gateway to career opportunities</p>
+      <main className="relative z-10 flex w-full max-w-md flex-col items-center">
+        <div className="mb-20 flex flex-col items-center sm:mb-16">
+          <CollegeLogo imageClassName="w-48" />
+          <h1 className="mt-3 text-xl font-medium tracking-tight">Placement</h1>
         </div>
 
-        <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
-          <CardHeader className="text-center">
-            <CardDescription className="text-white/60">
+        {isBusy ? (
+          <AuthCardSkeleton />
+        ) : (
+          <section
+            aria-label="Placement portal sign in"
+            className="w-full rounded-[2rem] border border-white/10 bg-[#444444] p-8 shadow-[0_24px_60px_rgba(15,23,42,0.28)] animate-in fade-in slide-in-from-bottom-2 duration-500"
+          >
+            <p className="mb-6 text-center text-sm font-medium text-white/80">
               Sign in with your RVCE Google account
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-center">
+            </p>
+            <div className="flex justify-center rounded-2xl bg-[#0d72d9] px-3 py-3 hover:bg-blue-600 transition-colors">
               <GoogleLogin
                 onSuccess={(cred) => {
                   if (cred.credential) void loginWithGoogle(cred.credential)
@@ -101,9 +72,9 @@ export default function HomeScreen() {
                 useOneTap={false}
                 theme="filled_blue"
                 size="large"
-                text="signin_with"
-                shape="rectangular"
-                width="100%"
+                text="continue_with"
+                shape="pill"
+                width="300"
               />
             </div>
           </CardContent>
@@ -142,6 +113,9 @@ export default function HomeScreen() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+          </section>
+        )}
+      </main>
     </div>
   )
 }

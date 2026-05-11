@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { persist } from 'zustand/middleware'
 import { ApiClient } from '../api/client'
 import { PlacementRepository } from '../api/placementRepository'
 import type { Session } from '../api/types'
@@ -29,7 +29,7 @@ const repo = new PlacementRepository(client)
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       status: 'checking',
       session: null,
       errorMessage: null,
@@ -52,7 +52,7 @@ export const useAuthStore = create<AuthState>()(
           client.setToken(session.token)
           localStorage.setItem(AUTH_TOKEN_KEY, session.token)
           set({ status: 'authenticated', session, errorMessage: null })
-        } catch (e) {
+        } catch {
           localStorage.removeItem(AUTH_TOKEN_KEY)
           client.setToken(null)
           set({ status: 'unauthenticated', session: null })
@@ -73,7 +73,6 @@ export const useAuthStore = create<AuthState>()(
           })
         }
       },
-
 
       logout: () => {
         localStorage.removeItem(AUTH_TOKEN_KEY)

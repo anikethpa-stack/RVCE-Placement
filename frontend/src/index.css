@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -43,7 +43,7 @@
   }
   body {
     @apply bg-bg-dark text-text-main antialiased;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Inter', sans-serif;
   }
 }
 
@@ -61,6 +61,43 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@layer utilities {
+  .rv-skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-120%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.22),
+      transparent
+    );
+    animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  }
+
+  .rv-skeleton-static::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rv-skeleton::after {
+    animation: none;
+    transform: translateX(0);
+    opacity: 0;
+  }
 }
 
 .plc-splash {
