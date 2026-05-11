@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { DynamicFormModal } from './DynamicFormModal'
 import { ClipboardList, MessageSquareText, FileQuestion, CheckCircle2, AlertCircle, Globe, Building } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { FormsPanelSkeleton } from '@/components/modern/Skeleton'
 
 export function FormsPanel() {
   const { forms, loading, error: err, fetchForms, getFormDetails } = useFormStore()
@@ -27,8 +28,8 @@ export function FormsPanel() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+      <div className="mx-auto w-full max-w-3xl">
+        <FormsPanelSkeleton />
       </div>
     )
   }

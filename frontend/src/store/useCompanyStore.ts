@@ -46,7 +46,7 @@ export const useCompanyStore = create<CompanyState>((set, get) => ({
     try {
       const repo = useAuthStore.getState().repo
       await repo.saveApplication(company.id, patch)
-      
+
       // Update local state immediately for a snappy UI
       const currentCompanies = get().companies
       if (currentCompanies) {
@@ -56,8 +56,6 @@ export const useCompanyStore = create<CompanyState>((set, get) => ({
           ),
         })
       }
-    } catch (e) {
-      throw e // Re-throw so the component can show a toast
     } finally {
       set((state) => {
         const nextBusy = new Set(state.busyIds)

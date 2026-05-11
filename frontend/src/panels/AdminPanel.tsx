@@ -55,6 +55,7 @@ import {
   Trash2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { AdminPanelSkeleton } from '@/components/modern/Skeleton'
 
 const EXPORT_FIELDS: { key: string; label: string }[] = [
   { key: 'usn', label: 'USN' },
@@ -67,6 +68,12 @@ const EXPORT_FIELDS: { key: string; label: string }[] = [
   { key: 'twelfth_marks', label: '12th Marks' },
   { key: 'first_sem_sgpa', label: '1st Sem SGPA' },
 ]
+
+function bytesToArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const buffer = new ArrayBuffer(bytes.byteLength)
+  new Uint8Array(buffer).set(bytes)
+  return buffer
+}
 
 type AdminData = {
   companies: Company[]
@@ -148,6 +155,7 @@ export function AdminPanel() {
   }, [repo])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load()
   }, [load])
 
@@ -248,7 +256,7 @@ export function AdminPanel() {
     const fields = [...exportFields]
     void run(async () => {
       const bytes = await repo.exportCompany(id, fields)
-      downloadBlob(new Blob([bytes] as any), `company-${id}.xlsx`)
+      downloadBlob(new Blob([bytesToArrayBuffer(bytes)]), `company-${id}.xlsx`)
     })
     setExportCompanyId(null)
   }
@@ -274,7 +282,7 @@ export function AdminPanel() {
   const exportFormExcel = async (formId: number) => {
     try {
       const bytes = await repo.exportFormResponses(formId)
-      downloadBlob(new Blob([bytes] as any), `form-${formId}-responses.xlsx`)
+      downloadBlob(new Blob([bytesToArrayBuffer(bytes)]), `form-${formId}-responses.xlsx`)
       toast.success('Download started.')
     } catch (e) {
       toast.error(e instanceof Error ? e.message : String(e))
@@ -282,11 +290,7 @@ export function AdminPanel() {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-      </div>
-    )
+    return <AdminPanelSkeleton />
   }
 
   if (err || !data) {
@@ -493,7 +497,10 @@ export function AdminPanel() {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-text-main">Field Type</Label>
-                  <Select value={qType} onValueChange={(v: any) => setQType(v)}>
+                  <Select
+                    value={qType}
+                    onValueChange={(v) => setQType(v as 'text' | 'number' | 'boolean' | 'dropdown')}
+                  >
                     <SelectTrigger className="bg-white/5 border-white/10 text-white">
                       <SelectValue />
                     </SelectTrigger>
@@ -532,7 +539,10 @@ export function AdminPanel() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-text-main">Form Type</Label>
-                    <Select value={fType} onValueChange={(v: any) => setFType(v)}>
+                    <Select
+                      value={fType}
+                      onValueChange={(v) => setFType(v as 'consent' | 'tracker' | 'custom')}
+                    >
                       <SelectTrigger className="bg-white/5 border-white/10 text-white">
                         <SelectValue />
                       </SelectTrigger>

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { persist } from 'zustand/middleware'
 import { ApiClient } from '../api/client'
 import { PlacementRepository } from '../api/placementRepository'
 import type { Session } from '../api/types'
@@ -19,6 +19,7 @@ interface AuthState {
   // Actions
   restoreSession: () => Promise<void>
   loginWithGoogle: (idToken: string) => Promise<void>
+  loginWithSpc: (username: string, password: string) => Promise<void>
   logout: () => void
   clearError: () => void
 }
@@ -29,7 +30,7 @@ const repo = new PlacementRepository(client)
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       status: 'checking',
       session: null,
       errorMessage: null,
@@ -52,7 +53,7 @@ export const useAuthStore = create<AuthState>()(
           client.setToken(session.token)
           localStorage.setItem(AUTH_TOKEN_KEY, session.token)
           set({ status: 'authenticated', session, errorMessage: null })
-        } catch (e) {
+        } catch {
           localStorage.removeItem(AUTH_TOKEN_KEY)
           client.setToken(null)
           set({ status: 'unauthenticated', session: null })
@@ -74,6 +75,20 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      loginWithSpc: async (username: string, password: string) => {
+        set({ status: 'loading', errorMessage: null })
+        try {
+          const session = await repo.spcLogin(username, password)
+          client.setToken(session.token)
+          localStorage.setItem(AUTH_TOKEN_KEY, session.token)
+          set({ status: 'authenticated', session, errorMessage: null })
+        } catch (e) {
+          set({
+            status: 'unauthenticated',
+            errorMessage: e instanceof Error ? e.message : String(e),
+          })
+        }
+      },
 
       logout: () => {
         localStorage.removeItem(AUTH_TOKEN_KEY)

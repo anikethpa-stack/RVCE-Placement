@@ -11,7 +11,7 @@ interface ProfileState {
 
   // Actions
   fetchProfile: () => Promise<void>
-  setDraftField: (field: keyof AppUser, value: any) => void
+  setDraftField: (field: keyof AppUser, value: AppUser[keyof AppUser]) => void
   saveProfile: () => Promise<void>
   uploadResume: (file: File) => Promise<void>
   requestUnlock: () => Promise<void>
@@ -69,7 +69,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       const repo = useAuthStore.getState().repo
       
       // Convert numeric fields from draft
-      const payload = {
+      const payload: Record<string, unknown> = {
         ...draft,
         ugCgpa: Number(draft.ugCgpa) || profile.ugCgpa,
         tenthMarks: Number(draft.tenthMarks) || profile.tenthMarks,
@@ -77,7 +77,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         firstSemSgpa: Number(draft.firstSemSgpa) || profile.firstSemSgpa,
       }
 
-      const updated = await repo.updateProfile(payload as any)
+      const updated = await repo.updateProfile(payload)
       set({ profile: updated, draft: { ...updated }, saving: false })
     } catch (e) {
       set({ saving: false })
