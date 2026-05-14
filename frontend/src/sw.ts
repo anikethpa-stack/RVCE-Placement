@@ -25,17 +25,28 @@ precacheAndRoute(self.__WB_MANIFEST)
 
 function getNavigationUrl(data: Record<string, string> = {}) {
   const type = data.type || ''
+  const params = new URLSearchParams()
 
   if (type === 'new_company' && data.companyId) {
-    return `/companies/${data.companyId}`
+    params.set('panel', 'companies')
+    params.set('companyId', data.companyId)
+    return `/?${params.toString()}`
   }
 
   if ((type === 'form_assignment' || type === 'new_form') && data.formId) {
-    return `/forms/${data.formId}`
+    params.set('panel', 'forms')
+    params.set('formId', data.formId)
+    return `/?${params.toString()}`
   }
 
-  if (type === 'message_mention' || type === 'announcement') {
-    return '/messages'
+  if (
+    type === 'message_mention' ||
+    type === 'announcement' ||
+    type === 'chat_message'
+  ) {
+    params.set('panel', 'chat')
+    if (data.messageId) params.set('messageId', data.messageId)
+    return `/?${params.toString()}`
   }
 
   return '/'
