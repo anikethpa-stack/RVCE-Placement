@@ -23,8 +23,17 @@ export const getPublicVapidKey = () => ({
   publicKey: env.webPush.publicKey,
 });
 
-export const sendToUsers = async ({ userIds, title, body, data = {} }) => {
-  const uniqueUserIds = [...new Set(userIds.map(Number).filter(Boolean))];
+export const sendToUsers = async ({
+  userIds,
+  title,
+  body,
+  data = {},
+  excludeUserIds = [],
+}) => {
+  const excludedUserIds = new Set(excludeUserIds.map(Number).filter(Boolean));
+  const uniqueUserIds = [
+    ...new Set(userIds.map(Number).filter(Boolean)),
+  ].filter((userId) => !excludedUserIds.has(userId));
 
   if (!isWebPushConfigured) {
     return {

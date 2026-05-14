@@ -37,6 +37,13 @@ type Panel = {
   element: React.ReactNode
 }
 
+const notificationPanelIds = new Set(['companies', 'forms', 'chat'])
+
+function getRequestedPanelId() {
+  const panel = new URLSearchParams(window.location.search).get('panel')
+  return panel && notificationPanelIds.has(panel) ? panel : null
+}
+
 export default function DashboardScreen() {
   const { session, logout, repo } = useAuth()
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -92,6 +99,17 @@ export default function DashboardScreen() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedIndex((i) => Math.min(i, Math.max(0, panels.length - 1)))
   }, [panels.length])
+
+  useEffect(() => {
+    const requestedPanelId = getRequestedPanelId()
+    if (!requestedPanelId) return
+
+    const panelIndex = panels.findIndex((panel) => panel.id === requestedPanelId)
+    if (panelIndex < 0) return
+
+    setSelectedIndex(panelIndex)
+    window.history.replaceState({}, '', window.location.pathname)
+  }, [panels])
 
   useEffect(() => {
     const handleFocus = () => setNotificationPreference(getNotificationPreference())

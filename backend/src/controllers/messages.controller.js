@@ -74,15 +74,18 @@ export const createMessageHandler = async (req, res, next) => {
       if (u) mentionedUsers.push({ id: u.id, name: u.name, email: u.collegeEmailId });
     }
 
-    // 5. Push FCM notifications to target users
-    const targetUserIds = req.auth.isSpc ? await listStudentIds() : mentionedUserIds;
+    // 5. Push notifications to everyone except the sender
+    const allStudentIds = await listStudentIds();
+    const senderUserId = Number(req.auth.userId);
+    const targetUserIds = allStudentIds.filter((id) => Number(id) !== senderUserId);
     if (targetUserIds.length > 0) {
       await sendToUsers({
         userIds: targetUserIds,
-        title: req.auth.isSpc ? 'New SPC Message' : `${sender.name} mentioned you`,
+        excludeUserIds: [senderUserId],
+        title: sender?.name ? `New message from ${sender.name}` : 'New chat message',
         body: text.substring(0, 100) || 'Sent an attachment',
         data: {
-          type: req.auth.isSpc ? 'announcement' : 'message_mention',
+          type: 'chat_message',
           messageId: String(message.id),
           senderId: String(req.auth.userId),
         },
