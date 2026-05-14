@@ -1,6 +1,8 @@
 import { toast } from 'sonner'
 import type { PlacementRepository } from '../api/placementRepository'
 
+const NOTIFICATION_OPT_OUT_KEY = 'notifications_opted_out'
+
 let serviceWorkerMessageListenerRegistered = false
 
 function urlBase64ToArrayBuffer(base64String: string): ArrayBuffer {
@@ -23,6 +25,42 @@ function canUsePushNotifications(): boolean {
     'serviceWorker' in navigator &&
     'PushManager' in window
   )
+}
+
+export function getNotificationPreference(): {
+  supported: boolean
+  permission: NotificationPermission | 'unsupported'
+  optedOut: boolean
+} {
+  return {
+    supported: canUsePushNotifications(),
+    permission: 'Notification' in window ? Notification.permission : 'unsupported',
+    optedOut: localStorage.getItem(NOTIFICATION_OPT_OUT_KEY) === 'true',
+  }
+}
+
+export async function allowNotifications(): Promise<NotificationPermission> {
+  localStorage.removeItem(NOTIFICATION_OPT_OUT_KEY)
+
+  if (!canUsePushNotifications()) return 'denied'
+  if (Notification.permission === 'granted') return 'granted'
+  if (Notification.permission === 'denied') return 'denied'
+
+  return Notification.requestPermission()
+}
+
+export async function blockNotifications(): Promise<void> {
+  localStorage.setItem(NOTIFICATION_OPT_OUT_KEY, 'true')
+
+  if (!('serviceWorker' in navigator)) return
+
+  try {
+    const registration = await navigator.serviceWorker.ready
+    const subscription = await registration.pushManager.getSubscription()
+    await subscription?.unsubscribe()
+  } catch {
+    /* ignore: blocking should still persist locally */
+  }
 }
 
 function applicationServerKeysMatch(
@@ -62,6 +100,7 @@ function registerForegroundMessageListener() {
 
 export async function registerNotifications(repo: PlacementRepository): Promise<void> {
   if (!canUsePushNotifications()) return
+  if (localStorage.getItem(NOTIFICATION_OPT_OUT_KEY) === 'true') return
 
   const { configured, publicKey } = await repo.getNotificationPublicKey()
   if (!configured || !publicKey) return
