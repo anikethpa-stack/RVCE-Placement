@@ -7,8 +7,6 @@ import { CompaniesPanel } from '../panels/CompaniesPanel'
 import { FormsPanel } from '../panels/FormsPanel'
 import { ProfilePanel } from '../panels/ProfilePanel'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { 
   User, 
   Building2, 
@@ -16,8 +14,6 @@ import {
   MessageSquare, 
   Settings, 
   LogOut,
-  Menu,
-  X,
   Bell,
   BellOff,
 } from 'lucide-react'
@@ -47,7 +43,6 @@ function getRequestedPanelId() {
 export default function DashboardScreen() {
   const { session, logout, repo } = useAuth()
   const [selectedIndex, setSelectedIndex] = useState(0)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [notificationPreference, setNotificationPreference] = useState(() =>
     getNotificationPreference(),
   )
@@ -56,12 +51,6 @@ export default function DashboardScreen() {
     () => {
       if (!session) return []
       return [
-        {
-          id: 'profile',
-          label: 'Profile',
-          icon: <User className="w-5 h-5" />,
-          element: <ProfilePanel />,
-        },
         {
           id: 'companies',
           label: 'Companies',
@@ -79,6 +68,20 @@ export default function DashboardScreen() {
           label: 'Chat',
           icon: <MessageSquare className="w-5 h-5" />,
           element: <ChatPanel />,
+        },
+        {
+          id: 'profile',
+          label: 'Profile',
+          icon: session.user.profilePictureUrl ? (
+            <img
+              src={session.user.profilePictureUrl}
+              alt=""
+              className="h-5 w-5 rounded-full object-cover"
+            />
+          ) : (
+            <User className="w-5 h-5" />
+          ),
+          element: <ProfilePanel />,
         },
         ...(session.isSpc
           ? [
@@ -151,182 +154,79 @@ export default function DashboardScreen() {
   const safeIndex = Math.min(selectedIndex, panels.length - 1)
   const active = panels[safeIndex] ?? panels[0]
 
-  const Sidebar = ({ className = '' }: { className?: string }) => (
-    <aside className={`flex flex-col h-full ${className}`}>
-      <div className="p-6 border-b border-white/10">
-        <div className="flex flex-col gap-3">
-          <div className="w-fit rounded-xl bg-white px-3 py-2 shadow-sm">
-            <CollegeLogo imageClassName="w-40" />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-white">Placement Desk</h2>
-            <p className="text-xs text-muted-foreground">
-              {session.isSpc ? 'Student + SPC' : 'Student Access'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <ScrollArea className="flex-1 p-4">
-        <nav className="space-y-1">
-          {panels.map((p, i) => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => {
-                setSelectedIndex(i)
-                setIsMobileMenuOpen(false)
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                i === safeIndex
-                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                  : 'text-muted-foreground hover:bg-white/5 hover:text-white'
-              }`}
-            >
-              {p.icon}
-              {p.label}
-            </button>
-          ))}
-        </nav>
-      </ScrollArea>
-
-      <div className="p-4 border-t border-white/10">
-        <Button
-          variant="outline"
-          className="mb-3 w-full justify-start gap-3"
-          onClick={() =>
-            void (notificationsEnabled
-              ? disableNotifications()
-              : enableNotifications())
-          }
-          disabled={!notificationPreference.supported}
-        >
-          {notificationsEnabled ? (
-            <BellOff className="w-4 h-4" />
-          ) : (
-            <Bell className="w-4 h-4" />
-          )}
-          {notificationsEnabled ? 'Block notifications' : 'Allow notifications'}
-        </Button>
-        <Button
-          variant="outline"
-          className="w-full justify-start gap-3"
-          onClick={logout}
-        >
-          <LogOut className="w-4 h-4" />
-          Logout
-        </Button>
-      </div>
-    </aside>
-  )
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:flex fixed left-0 top-0 bottom-0 w-72 z-40">
-        <Card className="w-full h-full rounded-none border-0 bg-white/5 backdrop-blur-xl border-r border-white/10">
-          <Sidebar />
-        </Card>
-      </div>
-
-      {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-white/5 backdrop-blur-xl border-b border-white/10">
+    <div className="min-h-screen bg-slate-50 text-slate-950 dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-white">
+      <header className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-slate-200 bg-white/85 px-4 py-3 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-white px-2 py-1 shadow-sm">
             <CollegeLogo imageClassName="w-28" />
           </div>
-          <span className="font-semibold text-white">Placement</span>
+          <div className="hidden min-w-0 sm:block">
+            <h1 className="truncate text-base font-semibold lg:text-xl">
+              Welcome, {session.user.name?.trim() || 'Student'}
+            </h1>
+            <p className="truncate text-xs text-muted-foreground">
+              {session.isSpc ? 'Student + SPC' : 'Student Access'}
+            </p>
+          </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {isMobileMenuOpen ? (
-            <X className="w-5 h-5" />
-          ) : (
-            <Menu className="w-5 h-5" />
-          )}
-        </Button>
+        <div className="flex shrink-0 items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() =>
+              void (notificationsEnabled
+                ? disableNotifications()
+                : enableNotifications())
+            }
+            disabled={!notificationPreference.supported}
+            className="border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 sm:w-auto sm:px-4"
+            title={notificationsEnabled ? 'Block notifications' : 'Allow notifications'}
+          >
+            {notificationsEnabled ? (
+              <BellOff className="w-4 h-4" />
+            ) : (
+              <Bell className="w-4 h-4" />
+            )}
+            <span className="hidden sm:inline">
+              {notificationsEnabled ? 'Block notifications' : 'Allow notifications'}
+            </span>
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={logout}
+            className="border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 sm:w-auto sm:px-4"
+            title="Logout"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="hidden sm:inline">Logout</span>
+          </Button>
+        </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}>
-          <div 
-            className="absolute right-0 top-0 bottom-0 w-72" 
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Card className="h-full rounded-none border-0 bg-slate-900 border-l border-white/10">
-              <Sidebar />
-            </Card>
-          </div>
-        </div>
-      )}
+      <main className="mx-auto min-h-[calc(100vh-4rem)] w-full max-w-7xl px-3 py-4 pb-28 sm:px-5 lg:px-8">
+        {active.element}
+      </main>
 
-      {/* Main Content */}
-      <div className="lg:ml-72">
-        <main className="min-h-screen pt-16 lg:pt-0">
-          {/* Desktop Header */}
-          <header className="hidden lg:flex items-center justify-between px-8 py-6 border-b border-white/10 bg-white/5 backdrop-blur-xl">
-            <div>
-              <h1 className="text-2xl font-semibold text-white">
-                Welcome, {session.user.name?.trim() || 'Student'}
-              </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {session.isSpc
-                  ? 'You can manage placement operations and still act as a student.'
-                  : 'Keep your verified profile sharp and respond quickly to drives.'}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={() =>
-                  void (notificationsEnabled
-                    ? disableNotifications()
-                    : enableNotifications())
-                }
-                disabled={!notificationPreference.supported}
-                className="gap-2"
-              >
-                {notificationsEnabled ? (
-                  <BellOff className="w-4 h-4" />
-                ) : (
-                  <Bell className="w-4 h-4" />
-                )}
-                {notificationsEnabled ? 'Block notifications' : 'Allow notifications'}
-              </Button>
-              <Button variant="outline" onClick={logout} className="gap-2">
-                <LogOut className="w-4 h-4" />
-                Logout
-              </Button>
-            </div>
-          </header>
-
-          <div className="p-4 lg:p-8">
-            {active.element}
-          </div>
-        </main>
-      </div>
-
-      {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 flex items-center justify-around px-2 py-2 bg-white/5 backdrop-blur-xl border-t border-white/10 safe-area-bottom">
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white/90 px-2 py-2 shadow-[0_-12px_32px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/85">
+        <div className="mx-auto flex max-w-3xl justify-around gap-1 sm:justify-center sm:gap-2">
         {panels.map((p, i) => (
           <button
             key={p.id}
             type="button"
             onClick={() => setSelectedIndex(i)}
-            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all ${
+            className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1.5 py-2 text-xs font-medium transition-all sm:min-w-24 sm:flex-none sm:px-4 ${
               i === safeIndex
-                ? 'text-primary'
-                : 'text-muted-foreground'
+                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-950 dark:text-muted-foreground dark:hover:bg-white/10 dark:hover:text-white'
             }`}
           >
             {p.icon}
-            <span className="text-xs font-medium">{p.label}</span>
+            <span className="max-w-full truncate">{p.label}</span>
           </button>
         ))}
+        </div>
       </nav>
     </div>
   )

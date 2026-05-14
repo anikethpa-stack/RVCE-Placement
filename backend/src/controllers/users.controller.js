@@ -1,9 +1,9 @@
 import multer from 'multer';
 import { z } from 'zod';
 
-import { findUserById, listStudents, updateUserProfile, updateUserResume, updateUserVerification, requestProfileUnlock, approveProfileUnlock } from '../repositories/user.repository.js';
+import { findUserById, listStudents, updateUserProfile, updateUserProfilePicture, updateUserResume, updateUserVerification, requestProfileUnlock, approveProfileUnlock } from '../repositories/user.repository.js';
 import { sendToUsers } from '../services/notification.service.js';
-import { uploadResume } from '../services/storage.service.js';
+import { uploadProfilePicture, uploadResume } from '../services/storage.service.js';
 import { ApiError } from '../utils/apiError.js';
 
 const upload = multer({
@@ -14,6 +14,7 @@ const upload = multer({
 });
 
 export const resumeUploadMiddleware = upload.single('resume');
+export const profilePictureUploadMiddleware = upload.single('profilePicture');
 
 const emptyStringToNull = (value) => {
   if (typeof value === 'string' && value.trim() === '') {
@@ -94,6 +95,36 @@ export const uploadMyResume = async (req, res, next) => {
     });
 
     const updated = await updateUserResume(existing.id, resumeUrl);
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const uploadMyProfilePicture = async (req, res, next) => {
+  try {
+    const existing = await findUserById(req.auth.userId);
+
+    if (!existing) {
+      throw new ApiError(404, 'User not found.');
+    }
+
+    if (!req.file) {
+      throw new ApiError(400, 'Profile picture is required.');
+    }
+
+    if (!req.file.mimetype.startsWith('image/')) {
+      throw new ApiError(400, 'Profile picture must be an image.');
+    }
+
+    const profilePictureUrl = await uploadProfilePicture({
+      buffer: req.file.buffer,
+      fileName: req.file.originalname,
+      mimeType: req.file.mimetype,
+      userId: existing.id,
+    });
+
+    const updated = await updateUserProfilePicture(existing.id, profilePictureUrl);
     res.json(updated);
   } catch (error) {
     next(error);

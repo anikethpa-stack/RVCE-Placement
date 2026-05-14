@@ -14,6 +14,7 @@ export type AppUser = {
   gitHub?: string | null
   usn?: string | null
   resumeUrl?: string | null
+  profilePictureUrl?: string | null
   unlockRequested?: boolean
 }
 
@@ -122,6 +123,7 @@ export function parseAppUser(json: Record<string, unknown>): AppUser {
     gitHub: json.gitHub as string | null | undefined,
     usn: json.usn as string | null | undefined,
     resumeUrl: json.resumeUrl as string | null | undefined,
+    profilePictureUrl: json.profilePictureUrl as string | null | undefined,
     unlockRequested: Boolean(json.unlockRequested),
   }
 }

@@ -5,5 +5,6 @@ const router = Router();
 
 router.get('/resumes/:filename', getResume);
 router.get('/attachments/:filename', getResume);
+router.get('/profile-pictures/:filename', getResume);
 
 export default router;

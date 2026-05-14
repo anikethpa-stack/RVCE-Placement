@@ -22,6 +22,7 @@ const normalizeUser = (row) => {
     tenthMarks: row.tenth_marks,
     twelfthMarks: row.twelfth_marks,
     resumeUrl: normalizeUrl(row.resume_url),
+    profilePictureUrl: normalizeUrl(row.profile_picture_url),
     verified: row.verified ?? false,
     unlockRequested: row.unlock_requested ?? false,
     createdAt: row.created_at,
@@ -46,31 +47,33 @@ export const findUserByAnyEmail = async (email) => {
   return normalizeUser(rows[0]);
 };
 
-export const createGoogleUser = async ({ name, email, googleId }) => {
+export const createGoogleUser = async ({ name, email, googleId, profilePictureUrl }) => {
   const { rows } = await query(
     `INSERT INTO "users" (
       "name",
       "college_email_id",
       "google_id",
+      "profile_picture_url",
       "verified",
       "created_at"
-    ) VALUES ($1, $2, $3, $4, NOW())
+    ) VALUES ($1, $2, $3, $4, $5, NOW())
     RETURNING *`,
-    [name, email, googleId, false],
+    [name, email, googleId, profilePictureUrl ?? null, false],
   );
 
   return normalizeUser(rows[0]);
 };
 
-export const attachGoogleIdentity = async ({ userId, name, email, googleId }) => {
+export const attachGoogleIdentity = async ({ userId, name, email, googleId, profilePictureUrl }) => {
   const { rows } = await query(
     `UPDATE "users"
       SET "name" = COALESCE($2, "name"),
           "college_email_id" = COALESCE("college_email_id", $3),
-          "google_id" = $4
+          "google_id" = $4,
+          "profile_picture_url" = COALESCE("profile_picture_url", $5)
     WHERE "id" = $1
     RETURNING *`,
-    [userId, name, email, googleId],
+    [userId, name, email, googleId, profilePictureUrl ?? null],
   );
 
   return normalizeUser(rows[0]);
@@ -119,6 +122,27 @@ export const updateUserResume = async (userId, resumeUrl) => {
   const { rows } = await query(
     'UPDATE "users" SET "resume_url" = $2 WHERE "id" = $1 RETURNING *',
     [userId, resumeUrl],
+  );
+
+  return normalizeUser(rows[0]);
+};
+
+export const updateUserProfilePicture = async (userId, profilePictureUrl) => {
+  const { rows } = await query(
+    'UPDATE "users" SET "profile_picture_url" = $2 WHERE "id" = $1 RETURNING *',
+    [userId, profilePictureUrl],
+  );
+
+  return normalizeUser(rows[0]);
+};
+
+export const updateUserGoogleProfilePicture = async (userId, profilePictureUrl) => {
+  const { rows } = await query(
+    `UPDATE "users"
+      SET "profile_picture_url" = COALESCE("profile_picture_url", $2)
+    WHERE "id" = $1
+    RETURNING *`,
+    [userId, profilePictureUrl],
   );
 
   return normalizeUser(rows[0]);

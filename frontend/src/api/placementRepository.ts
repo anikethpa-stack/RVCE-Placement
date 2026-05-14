@@ -82,6 +82,13 @@ export class PlacementRepository {
     return parseAppUser(json)
   }
 
+  async uploadProfilePicture(file: File): Promise<AppUser> {
+    const form = new FormData()
+    form.append('profilePicture', file)
+    const json = await this.client.postFormData('/users/me/profile-picture', form)
+    return parseAppUser(json)
+  }
+
   async getCompanies(): Promise<Company[]> {
     const list = await this.client.getList('/companies')
     return list.map((item) => parseCompany(item as Record<string, unknown>))

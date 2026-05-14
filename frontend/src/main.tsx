@@ -1,4 +1,5 @@
 import { GoogleOAuthProvider } from '@react-oauth/google'
+import { ThemeProvider } from 'next-themes'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
@@ -13,10 +14,12 @@ registerSW({ immediate: true })
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
         <AuthProvider>
           <App />
           <Toaster position="top-right" richColors />
         </AuthProvider>
+      </ThemeProvider>
     </GoogleOAuthProvider>
   </StrictMode>,
 )

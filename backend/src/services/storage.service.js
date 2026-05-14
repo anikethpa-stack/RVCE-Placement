@@ -37,6 +37,37 @@ const buildResumeFileName = ({ userName, userId, fileName, mimeType }) => {
   return `${cleanName}_Resume${extension}`;
 };
 
+const buildProfilePictureFileName = ({ userId, fileName, mimeType }) => {
+  const extension = inferFileExtension(fileName, mimeType);
+  return `User_${userId}_Profile_Picture${extension}`;
+};
+
+const uploadToGridFs = async ({ buffer, fileName, mimeType, userId }) => {
+  const bucket = await getBucket();
+  if (!bucket) return null;
+
+  const existingFiles = await bucket.find({ filename: fileName }).toArray();
+  for (const file of existingFiles) {
+    await bucket.delete(file._id);
+  }
+
+  const uploadStream = bucket.openUploadStream(fileName, {
+    metadata: { userId, contentType: mimeType },
+  });
+
+  const readableStream = new Readable();
+  readableStream.push(buffer);
+  readableStream.push(null);
+
+  await new Promise((resolve, reject) => {
+    readableStream.pipe(uploadStream)
+      .on('error', reject)
+      .on('finish', resolve);
+  });
+
+  return true;
+};
+
 export const uploadResume = async ({
   buffer,
   fileName,
@@ -103,6 +134,32 @@ export const uploadResume = async ({
   await fs.writeFile(filePath, buffer);
 
   return `${env.baseUrl}/uploads/${resumeName}`;
+};
+
+export const uploadProfilePicture = async ({
+  buffer,
+  fileName,
+  mimeType,
+  userId,
+}) => {
+  const profilePictureName = buildProfilePictureFileName({ userId, fileName, mimeType });
+
+  try {
+    const uploaded = await uploadToGridFs({
+      buffer,
+      fileName: profilePictureName,
+      mimeType,
+      userId,
+    });
+
+    if (uploaded) {
+      return `${env.baseUrl}/api/profile-pictures/${profilePictureName}`;
+    }
+  } catch (error) {
+    console.error('MongoDB GridFS profile picture upload failed:', error);
+  }
+
+  throw new Error('Profile picture storage is unavailable.');
 };
 
 export const uploadAttachment = async ({

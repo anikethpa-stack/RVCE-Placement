@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS "users" (
   "tenth_marks"       float,
   "twelfth_marks"     float,
   "resume_url"        text,
+  "profile_picture_url" text,
   "verified"          boolean,
   "unlock_requested"  boolean DEFAULT false,
   "created_at"        timestamp
@@ -209,3 +210,7 @@ EXCEPTION WHEN duplicate_column THEN NULL; END $$;
 DO $$ BEGIN
   ALTER TABLE "messages" ALTER COLUMN "message_text" DROP NOT NULL;
 EXCEPTION WHEN OTHERS THEN NULL; END $$;
+
+DO $$ BEGIN
+  ALTER TABLE "users" ADD COLUMN "profile_picture_url" text;
+EXCEPTION WHEN duplicate_column THEN NULL; END $$;

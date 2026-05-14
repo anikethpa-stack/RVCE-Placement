@@ -10,6 +10,7 @@ import {
   findUserByAnyEmail,
   findUserByGoogleId,
   findUserById,
+  updateUserGoogleProfilePicture,
 } from '../repositories/user.repository.js';
 import { ApiError } from '../utils/apiError.js';
 import { signAccessToken } from '../utils/jwt.js';
@@ -55,6 +56,10 @@ export const googleLogin = async (req, res, next) => {
 
     let user = await findUserByGoogleId(payload.sub);
 
+    if (user && payload.picture && !user.profilePictureUrl) {
+      user = await updateUserGoogleProfilePicture(user.id, payload.picture);
+    }
+
     if (!user) {
       const existingByEmail = await findUserByAnyEmail(payload.email);
       if (existingByEmail) {
@@ -63,12 +68,14 @@ export const googleLogin = async (req, res, next) => {
           name: payload.name,
           email: payload.email,
           googleId: payload.sub,
+          profilePictureUrl: payload.picture,
         });
       } else {
         user = await createGoogleUser({
           name: payload.name,
           email: payload.email,
           googleId: payload.sub,
+          profilePictureUrl: payload.picture,
         });
       }
     }

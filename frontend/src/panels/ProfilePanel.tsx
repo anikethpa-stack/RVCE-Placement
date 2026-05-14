@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTheme } from 'next-themes'
 import { useProfileStore } from '../store/useProfileStore'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -6,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle2, AlertCircle, Upload, Save, FileText, Clock, Unlock } from 'lucide-react'
+import { CheckCircle2, AlertCircle, Upload, Save, FileText, Clock, Unlock, Camera, Moon, Sun, User } from 'lucide-react'
 import { StudentProfileSkeleton } from '@/components/modern/Skeleton'
 
 const FormField = ({ label, value, onChange, id, type = 'text', disabled = false }: {
@@ -18,19 +19,20 @@ const FormField = ({ label, value, onChange, id, type = 'text', disabled = false
   disabled?: boolean
 }) => (
   <div className="space-y-2">
-    <Label htmlFor={id} className="text-sm font-medium text-text-muted">{label}</Label>
+    <Label htmlFor={id} className="text-sm font-medium text-slate-600 dark:text-text-muted">{label}</Label>
     <Input
       id={id}
       type={type}
       value={value}
       disabled={disabled}
       onChange={(e) => onChange(e.target.value)}
-      className="bg-white/5 border-white/10 text-white focus:ring-primary/50"
+      className="border-slate-200 bg-white text-slate-950 focus:ring-primary/50 dark:border-white/10 dark:bg-white/5 dark:text-white"
     />
   </div>
 )
 
 export function ProfilePanel() {
+  const { theme, setTheme } = useTheme()
   const { 
     profile: user, 
     draft, 
@@ -41,6 +43,7 @@ export function ProfilePanel() {
     setDraftField,
     saveProfile,
     uploadResume,
+    uploadProfilePicture,
     requestUnlock
   } = useProfileStore()
 
@@ -76,6 +79,23 @@ export function ProfilePanel() {
     input.click()
   }
 
+  const onUploadProfilePicture = async () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/png,image/jpeg,image/webp'
+    input.onchange = async () => {
+      const file = input.files?.[0]
+      if (!file) return
+      try {
+        await uploadProfilePicture(file)
+        toast.success('Profile picture updated.')
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : String(e))
+      }
+    }
+    input.click()
+  }
+
   const onRequestUnlock = async () => {
     try {
       await requestUnlock()
@@ -99,21 +119,68 @@ export function ProfilePanel() {
     return (
       <Card className="glass-panel border-destructive/20 text-center p-12 max-w-2xl mx-auto">
         <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
-        <h3 className="text-xl font-bold mb-2 text-white">Failed to load profile</h3>
-        <p className="text-text-muted mb-6">{err ?? 'An unknown error occurred.'}</p>
+        <h3 className="text-xl font-bold mb-2 text-slate-950 dark:text-white">Failed to load profile</h3>
+        <p className="text-slate-600 dark:text-text-muted mb-6">{err ?? 'An unknown error occurred.'}</p>
         <Button onClick={load}>Retry</Button>
       </Card>
     )
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-20 lg:pb-8">
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <Card className="glass-panel overflow-hidden">
+        <CardContent className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 dark:border-white/10 dark:bg-white/10">
+              {user.profilePictureUrl ? (
+                <img
+                  src={user.profilePictureUrl}
+                  alt={user.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <User className="h-9 w-9 text-slate-500 dark:text-white/70" />
+                </div>
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-lg font-semibold text-slate-950 dark:text-white">
+                {user.name || 'Student'}
+              </p>
+              <p className="truncate text-sm text-slate-600 dark:text-text-muted">
+                {user.collegeEmailId}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={onUploadProfilePicture}
+              disabled={saving}
+              className="w-full gap-2 border-slate-200 bg-white text-slate-800 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 sm:w-auto"
+            >
+              <Camera className="w-4 h-4" />
+              Upload Photo
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="w-full gap-2 border-slate-200 bg-white text-slate-800 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 sm:w-auto"
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Verification & Resume Section */}
-      <Card className="glass-panel border-white/10">
+      <Card className="glass-panel">
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex flex-wrap items-center gap-2 text-slate-950 dark:text-white">
                 Verification Status
                 {user.verified ? (
                   <Badge className="bg-green-500/20 text-green-400 border-green-500/20 gap-1.5 hover:bg-green-500/30">
@@ -125,19 +192,19 @@ export function ProfilePanel() {
                   </Badge>
                 )}
               </CardTitle>
-              <CardDescription className="text-text-muted">
+              <CardDescription className="text-slate-600 dark:text-text-muted">
                 {user.verified
                   ? 'Your profile is locked and verified by SPC.'
                   : 'Complete your profile and upload a resume to get verified.'}
               </CardDescription>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
               {user.verified && (
                 <Button
                   variant="outline"
                   onClick={onRequestUnlock}
                   disabled={user.unlockRequested || saving}
-                  className="gap-2 border-white/10 text-white hover:bg-white/5"
+                  className="w-full gap-2 border-slate-200 bg-white text-slate-800 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 sm:w-auto"
                 >
                   <Unlock className="w-4 h-4" />
                   {user.unlockRequested ? 'Edit Request Pending' : 'Request Profile Edit'}
@@ -147,7 +214,7 @@ export function ProfilePanel() {
                 variant="outline"
                 onClick={onUploadResume}
                 disabled={saving}
-                className="gap-2 border-white/10 text-white hover:bg-white/5"
+                className="w-full gap-2 border-slate-200 bg-white text-slate-800 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 sm:w-auto"
               >
                 <Upload className="w-4 h-4" />
                 {user.resumeUrl ? 'Update Resume' : 'Upload Resume'}
@@ -157,12 +224,12 @@ export function ProfilePanel() {
         </CardHeader>
         {user.resumeUrl && (
           <CardContent>
-            <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
-              <div className="p-2 bg-white/10 rounded-lg border border-white/10 shadow-sm">
+            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 dark:bg-white/5 dark:border-white/10">
+              <div className="p-2 bg-white rounded-lg border border-slate-200 shadow-sm dark:bg-white/10 dark:border-white/10">
                 <FileText className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Current Resume</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider dark:text-text-muted">Current Resume</p>
                 <a
                   href={user.resumeUrl}
                   target="_blank"
@@ -178,10 +245,10 @@ export function ProfilePanel() {
       </Card>
 
       {/* Main Profile Form */}
-      <Card className="glass-panel border-white/10">
+      <Card className="glass-panel">
         <CardHeader>
-          <CardTitle className="text-white">Academic & Personal Details</CardTitle>
-          <CardDescription className="text-text-muted">
+          <CardTitle className="text-slate-950 dark:text-white">Academic & Personal Details</CardTitle>
+          <CardDescription className="text-slate-600 dark:text-text-muted">
             Ensure all information matches your college records exactly.
           </CardDescription>
         </CardHeader>
@@ -201,8 +268,8 @@ export function ProfilePanel() {
             <FormField label="12th Aggregate (%)" value={String(draft.twelfthMarks ?? '')} onChange={(v) => setDraftField('twelfthMarks', v)} id="pf-12" type="number" disabled={readOnly} />
           </div>
         </CardContent>
-        <CardFooter className="justify-end border-t border-white/10 p-6 bg-white/5">
-          <Button onClick={onSave} disabled={readOnly} className="gap-2 bg-primary hover:bg-primary-hover shadow-lg shadow-primary/20">
+        <CardFooter className="justify-end border-t border-slate-200 p-4 bg-slate-50 dark:border-white/10 dark:bg-white/5 sm:p-6">
+          <Button onClick={onSave} disabled={readOnly} className="w-full gap-2 bg-primary hover:bg-primary-hover shadow-lg shadow-primary/20 sm:w-auto">
             <Save className="w-4 h-4" />
             {saving ? 'Saving...' : 'Save Profile'}
           </Button>

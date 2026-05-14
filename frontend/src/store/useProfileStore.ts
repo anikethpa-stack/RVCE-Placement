@@ -14,6 +14,7 @@ interface ProfileState {
   setDraftField: (field: keyof AppUser, value: AppUser[keyof AppUser]) => void
   saveProfile: () => Promise<void>
   uploadResume: (file: File) => Promise<void>
+  uploadProfilePicture: (file: File) => Promise<void>
   requestUnlock: () => Promise<void>
   resetDraft: () => void
 }
@@ -78,6 +79,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       }
 
       const updated = await repo.updateProfile(payload)
+      useAuthStore.getState().setSessionUser(updated)
       set({ profile: updated, draft: { ...updated }, saving: false })
     } catch (e) {
       set({ saving: false })
@@ -90,6 +92,20 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     try {
       const repo = useAuthStore.getState().repo
       const updated = await repo.uploadResume(file)
+      useAuthStore.getState().setSessionUser(updated)
+      set({ profile: updated, draft: { ...updated }, saving: false })
+    } catch (e) {
+      set({ saving: false })
+      throw e
+    }
+  },
+
+  uploadProfilePicture: async (file) => {
+    set({ saving: true })
+    try {
+      const repo = useAuthStore.getState().repo
+      const updated = await repo.uploadProfilePicture(file)
+      useAuthStore.getState().setSessionUser(updated)
       set({ profile: updated, draft: { ...updated }, saving: false })
     } catch (e) {
       set({ saving: false })

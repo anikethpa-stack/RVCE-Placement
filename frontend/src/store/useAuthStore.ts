@@ -22,6 +22,7 @@ interface AuthState {
   loginWithGoogle: (idToken: string) => Promise<void>
   logout: () => void
   clearError: () => void
+  setSessionUser: (user: Session['user']) => void
 }
 
 // Initialize instances once outside the store
@@ -84,6 +85,10 @@ export const useAuthStore = create<AuthState>()(
       },
 
       clearError: () => set({ errorMessage: null }),
+      setSessionUser: (user) =>
+        set((state) => ({
+          session: state.session ? { ...state.session, user } : state.session,
+        })),
     }),
     {
       name: 'rvce-auth-storage',
